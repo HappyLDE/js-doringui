@@ -53,7 +53,7 @@ $.fn.dg_validate = function()
             }
 
 						var alert_message = message + '<span class="btn btn-outline-warning p-0 px-2 ml-2 my-1"><span aria-hidden="true">&times;</span></span>';
-						var plane = $(element).dg_plane({'content':alert_message, 'position':'bottom', 'class':'transp_hard px-2 rounded curpointer', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8; border-top: 4px solid red;'});
+						var plane = $(element).dg_plane({'content':alert_message, 'position':'bottom', 'class':'bg-secondary px-2 rounded curpointer', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8; border-top: 4px solid red;'});
 
 						$(plane).click( function()
 						{
@@ -195,7 +195,7 @@ $.fn.dg_plane = function(options, callback_function)
 	event.plane_size = [];
 	event.date = new Date();
 	event.content = 'empty';
-	event.classe = 'transp';
+	event.classe = 'bg-secondary';
 	event.adaptive_width = true;
 	event.offset_top = 0;
 	event.offset_left = 0;
@@ -334,7 +334,7 @@ $.dg_popup = function(options)
 
   if ( event.div_popup_uniqid.length )
   {
-    event.plane = $(event.div_popup_uniqid).dg_plane({'content':event.content, 'position':event.position, 'class':'transp_hard pad5 round5', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8;'});
+    event.plane = $(event.div_popup_uniqid).dg_plane({'content':event.content, 'position':event.position, 'class':'bg-secondary pad5 rounded', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8;'});
 
     if ( event.oninit_function )
       event.oninit_function(event);
@@ -349,7 +349,7 @@ $.fn.dg_floater = function(options)
   event.element = this;
   event.position = 'right';
   event.content = '';
-  event.class = 'transp_hard pad5 round5';
+  event.class = 'bg-secondary pad5 rounded';
   event.style = 'box-shadow: 5px 5px 10px #A8A8A8;';
   event.oninit_function = null;
 
@@ -721,7 +721,7 @@ $.fn.dg_drag = function(options)
 
       var dragged_content = '<div class=" js-doringui-arrow-corners js-doringui-corner-right-bottom" style="position: absolute; margin-left: -30px; margin-top: -27px;"></div>'+$(element).html();
 
-      event.plane = $(element).dg_plane({'content': dragged_content, 'class':'transp p-2 round5', 'adaptive-width':false, 'style':'position:fixed; box-shadow: 10px 10px 60px #afafaf; display: none;'});
+      event.plane = $(element).dg_plane({'content': dragged_content, 'class':'bg-secondary p-2 rounded', 'adaptive-width':false, 'style':'position:fixed; box-shadow: 10px 10px 60px #afafaf; display: none;'});
 
       if ( event.oninit_function )
       {
@@ -1007,7 +1007,7 @@ $.fn.dg_editer = function(options)
 	event.target = '';
   event.arrow_tip_offset = 25;
 	event.update_target = true;
-	event.title_class = 'transp_hard p-2';
+	event.title_class = 'bg-secondary p-2';
 	event.onreturn_function = null;
 	event.oninit_function = null;
 
@@ -1060,7 +1060,7 @@ $.fn.dg_editer = function(options)
 			var html = '<div rel="arrow" class=" js-doringui-chevrons js-doringui-chevron-'+(event.position == 'bottom-left' ? 'up' : 'down')+'" style="position: absolute;"></div>';
 
       // Highlighter
-      html += '<div rel="highlighter" class="border border-secondary highlighter round5" style="position: absolute;"></div>';
+      html += '<div rel="highlighter" class="border border-secondary highlighter rounded" style="position: absolute;"></div>';
 
       // Title
 			if ( event.title_text )
@@ -1072,7 +1072,7 @@ $.fn.dg_editer = function(options)
       // Lets close the other editers
       $('.dg_editer').remove();
 
-			event.editer = $(element).dg_plane({'content':html, 'position':event.position, 'offset-top':event.position == 'bottom-left' ? 15 : -15, 'class':'transp_really_hard p-1 round5 dg_editer', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8; width: 200px;'}, function(event_plane)
+			event.editer = $(element).dg_plane({'content':html, 'position':event.position, 'offset-top':event.position == 'bottom-left' ? 15 : -15, 'class':'bg-dark p-1 rounded dg_editer', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8; width: 200px;'}, function(event_plane)
 			{
 				event.event_plane = event_plane;
 				event.input = $(event.event_plane.plane).find('input:first');
@@ -1721,7 +1721,7 @@ $.fn.dg_limit = function(options, callback_function)
 
 		if (!hide_counter)
 		{
-			$(element).before("<div class='transp_hard js-doringui-limit' style='border-radius: 4px; padding: 0px; padding-left: 3px; padding-right: 3px; line-height: 12px;' id='dg_limit_counter_"+uniqid+"'>"+box_length+"/"+max_length+"</div>");
+			$(element).before("<div class='bg-secondary js-doringui-limit' style='border-radius: 4px; padding: 0px; padding-left: 3px; padding-right: 3px; line-height: 12px;' id='dg_limit_counter_"+uniqid+"'>"+box_length+"/"+max_length+"</div>");
 
 			var $counter = $(element).prev("div[id=dg_limit_counter_"+uniqid+"]");
 
