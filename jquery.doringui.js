@@ -26,54 +26,83 @@ $.fn.dg_validate = function()
 	// For each input element in this form
 	$.each($(form_element).find('[dg_validate]'), function(index_element, element)
 	{
-		var options = $(element).attr('dg_validate').split(';');
+		var options = $(element).attr('dg_validate').split(' ');
+
+    // Get the custom message for that input to display
+    var dg_validate_message = $(element).attr('dg_validate_message');
+
+    var messages = '';
 
 		// For each options on this input element
 		$.each(options, function(index_option, option)
 		{
 			var option_array = option.split(':');
 
+      var element_value = $(element).val();console.log('('+option_array[0]+')');
+
 			switch (option_array[0])
 			{
 				// Check for minimum number of characters
 				case 'min-chars':
 				{
-					if ( $(element).val().length < option_array[1] )
+          var min_chars = parseInt(option_array[1]);
+
+					if ( element_value.length < min_chars )
 					{
-            var message = $(element).attr('dg_validate_message');
+            var message = '';
 
-            if ( !message || !message.length )
-            {
-              var title = $(element).attr('placeholder');
+            var element_name = $(element).attr('name');
 
-              if ( title && title.length )
-                message = title+' must have '+option_array[1]+'+ characters';
-              else
-                message = $(element).attr('name')+' must have '+option_array[1]+'+ characters';
-            }
+            if ( element_name && element_name.length )
+              message = '<b>'+$.dg_ucwords(element_name)+'</b> must have '+option_array[1]+'+ characters.';
+            else
+              message = 'Input must have '+option_array[1]+'+ characters.';
 
-						var alert_message = message + '<span class="btn btn-outline-warning p-0 px-2 ml-2 my-1"><span aria-hidden="true">&times;</span></span>';
-						var plane = $(element).dg_plane({'content':alert_message, 'position':'bottom', 'class':'bg-secondary px-2 rounded curpointer', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8; border-top: 4px solid red;'});
-
-						$(plane).click( function()
-						{
-							$(plane).remove();
-						});
-
-						passed = false;
-					}
-					else
-					{
-						var plane = $(element).dg_plane({'request-type':'plane'});
-
-						if ( plane.length )
-							$(plane).remove();
+						messages += '<p>'+message+'</p>';
 					}
 
 					break;
 				}
+
+        case 'email':
+        {
+          if ( element_value.length > 4 )
+          {
+            var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,6})+$/;
+
+            if ( !regex.test(element_value) )
+  					{
+              message = 'Invalid email syntax!';
+
+              messages += '<p>'+message+'</p>';
+  					}
+          }
+
+          break;
+        }
 			}
 		});
+
+    // if ( !dg_validate_message || !dg_validate_message.length )
+
+    if ( messages && messages.length )
+    {
+      var plane = $(element).dg_plane({'content':'<span class="btn btn-outline-danger btn-bg p-0 px-1"><span aria-hidden="true">&times;</span></span> '+messages, 'position':'bottom', 'class':'bg-secondary px-2 rounded text-light curpointer', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8; border-top: 4px solid red;'});
+
+      $(plane).click( function()
+      {
+        $(plane).remove();
+      });
+
+      passed = false;
+    }
+    else
+    {
+      var plane = $(element).dg_plane({'request-type':'plane'});
+
+      if ( plane.length )
+        $(plane).remove();
+    }
 	});
 
 	return passed;
@@ -137,6 +166,7 @@ $.sprintf = function(text, replace)
 	return text.replace(/%s/g, replace);
 }
 
+// Change the url of the page after the domain
 $.dg_changeUrl = function(page, url)
 {
     if (typeof (history.pushState) != "undefined")
@@ -1487,205 +1517,6 @@ $.fn.dg_autocomplete = function(options)
 
 	return event;
 }
-
-// Will transform an input box into a single star according to the value="{integer}" of the input and shows the integer value on the star
-// $.fn.dg_rated = function(options, callback_function)
-// {
-// 	// Checkboxes
-// 	$(this).each( function()
-// 	{
-// 		var element_input = this;
-//
-// 		$(element_input).after('<div class="js-doringui js-doringui-rate"></div>').css({'display':'none'});
-//
-// 		var element = $(element_input).next("div.js-doringui-rate");
-//
-// 		var original_value = parseInt( $(element_input).val() );
-//
-// 		$(element).append('<div title="'+original_value+' étoile(s)" style="cursor: auto;" class=" js-doringui-rate-star js-doringui-rate-star-active"><div class="js-doringui-rate-star-text-rated">'+original_value+'</div></div>');
-//
-// 		return element_input;
-// 	});
-// }
-//
-// // Will transform an input box into star votings and the voted star will be the .val() of the input
-// $.fn.dg_rate = function(options, callback_function)
-// {
-// 	var element_input = this;
-//
-// 	var exists = $(element_input).next("div.js-doringui-rate").length?1:0;
-//
-// 	// First check if there is already a rater created
-// 	if ( !exists )
-// 		$(element_input).after('<div class="js-doringui js-doringui-rate"></div>').css({'display':'none'});
-//
-// 	var element = $(element_input).next("div.js-doringui-rate");
-//
-// 	if ( exists )
-// 	{
-// 		$(element).unbind('hover');
-// 		$(element).unbind('click');
-// 	}
-//
-// 	var stars = 5;
-// 	var locked = 0;
-// 	var return_type = "input";
-//
-// 	var selected = 0;
-//
-// 	$.each( options, function(index, value)
-// 	{
-// 		switch ( index )
-// 		{
-// 			case "stars": stars = value; break;
-// 			case "selected": selected = value; break;
-// 			case "locked": locked = value; break;
-// 			case "return": return_type = value; break;
-// 		}
-// 	});
-//
-// 	if ( stars > 10 )
-// 		stars = 10;
-//
-// 	if ( !options.selected )
-// 	{
-// 		var original_value = parseInt( $(element_input).val() );
-//
-// 		if ( original_value < 0 )
-// 				original_value = 0;
-//
-// 		if ( original_value >= 0 )
-// 		{
-// 			if ( original_value > stars )
-// 				original_value = stars;
-//
-// 			selected = original_value;
-// 		}
-// 	}
-//
-// 	$(element_input).attr({'selected':selected}).val( selected );
-//
-// 	function setActiveStars(number)
-// 	{
-// 		number = stars-number;
-//
-// 		$(element).find(".js-doringui-rate-star").reverse().each( function(index)
-// 		{
-// 			if ( number <= index )
-// 			{
-// 				$(this).addClass('js-doringui-rate-star-active');
-// 			}
-// 			else
-// 				$(this).removeClass('js-doringui-rate-star-active');
-// 		});
-// 	}
-//
-// 	// Add the stars inside
-// 	if( !exists )
-// 	for (var i = 0; i < stars; ++i)
-// 	{
-// 		var etoiles = i+1;
-//
-// 		$(element).append('<div '+( locked ? 'style="cursor: auto;" title="'+selected+' étoile(s)"' : 'title="'+etoiles+' étoile(s)"' )+' class=" js-doringui-rate-star"><div class="js-doringui-rate-star-text">'+etoiles+'</div></div>');
-// 	}
-//
-// 	setActiveStars( selected );
-//
-// 	if ( !locked )
-// 	{
-// 		$(element).find(".js-doringui-rate-star").hover( function()
-// 					{
-// 						setActiveStars( parseInt($(this).text()) );
-// 					}, function()
-// 					{
-// 						setActiveStars ( selected );
-// 					}).click( function()
-// 					{
-// 						selected = parseInt($(this).text());
-//
-// 						$(element_input).attr({'selected':selected}).val( selected );
-//
-// 						callback_function(element_input, selected);
-// 					});
-//
-// 		$(element_input).change( function()
-// 		{
-// 			original_value = parseInt( $(element_input).val() );
-//
-// 			if ( original_value < 0 )
-// 				original_value = 0;
-//
-// 			if ( original_value >= 0 )
-// 			{
-// 				if ( original_value > stars )
-// 					original_value = stars;
-//
-// 				selected = original_value;
-// 			}
-//
-// 			$(element_input).attr({'selected':selected}).val( selected );
-//
-// 			setActiveStars( selected );
-//
-// 			callback_function(element_input, selected);
-// 		});
-// 	}
-//
-// 	if ( return_type == "dg_rate" )
-// 		return element;
-// 	else
-// 		return element_input;
-// }
-
-// Creates a visual line from element to element (squared line)
-// $.fn.dg_link = function(options)
-// {
-// 	var element = this;
-//
-// 	$.each( options, function(index, value)
-// 	{
-// 		switch ( index )
-// 		{
-// 			case "to": to = value; break;
-// 		}
-// 	});
-//
-// 	var currentDate = new Date();
-// 	var uniqid = currentDate.valueOf();
-//
-// 	var $prev = $('div[link_uniqid*="link_'+$(to).attr('link_uniqid')+'"]');
-//
-// 	var to_pos = $(to).offset();
-// 	var element_pos = $(element).offset();
-//
-// 	var width = element_pos.left - to_pos.left - $(to).outerWidth(1) + 10;
-// 	var height = (element_pos.top - to_pos.top) - $(to).outerHeight() + 10;
-//
-// 	// On vérifie si le div précédent est un dg_link
-// 	if ( $prev.length )
-// 		$prev.remove();
-//
-// 	if ( height < 0 )
-// 	{
-// 		height = -height-10;
-// 		$(to).attr({'link_uniqid':uniqid}).before("<div rel='dg_link' link_uniqid='link_"+uniqid+"' style='position: relative;'><div id='dg_link_"+$(to).attr('id')+"' style='display: block; position: absolute; margin-left: "+(parseInt($(to).css('margin-left')) + $(to).outerWidth())+"px; margin-top: "+($(to).outerHeight()-11)+"px; width: "+width+"px; height: 1px; border-top: 2px solid #000;'><div style='display: block; float: right; border-right: 2px solid #000; width: 1px; margin-top: -"+(height-8)+"px; height: "+(height-8)+"px;'><div style='display: block; margin-left: -3px; width: 10px; height: 10px; background: url(images/fleche_haut2.png);'></div></div></div></div>");
-// 	}
-// 	else
-// 		$(to).attr({'link_uniqid':uniqid}).before("<div rel='dg_link' link_uniqid='link_"+uniqid+"' style='position: relative;'><div id='dg_link_"+$(to).attr('id')+"' style='display: block; position: absolute; margin-left: "+(parseInt($(to).css('margin-left')) + $(to).outerWidth())+"px; margin-top: "+($(to).outerHeight()-11)+"px; width: "+width+"px; height: 1px; border-top: 2px solid #000;'><div style='display: block; float: right; border-right: 2px solid #000; width: 1px; height: "+height+"px;'><div style='display: block; margin-left: -3px; margin-top: "+(height-10)+"px; width: 10px; height: 10px; background: url(images/fleche_bas2.png);'></div></div></div></div>");
-//
-// 	return element;
-// }
-//
-// $.fn.dg_removeLink = function()
-// {
-// 	var element = this;
-//
-// 	var $prev = $('div[link_uniqid*="link_'+$(element).attr('link_uniqid')+'"]');
-//
-// 	// On vérifie si le div précédent est un dg_popup
-// 	if ( $prev.length )
-// 		$prev.remove();
-// }
 
 // Will add a string limit on any textarea or input text box and shows the current number of chars and the max allowed on the right corner
 $.fn.dg_limit = function(options, callback_function)
