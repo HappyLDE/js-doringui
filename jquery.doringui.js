@@ -38,7 +38,7 @@ $.fn.dg_validate = function()
 		{
 			var option_array = option.split(':');
 
-      var element_value = $(element).val();console.log('('+option_array[0]+')');
+      var element_value = $(element).val(); // console.log('('+option_array[0]+')');
 
 			switch (option_array[0])
 			{
@@ -51,9 +51,12 @@ $.fn.dg_validate = function()
 					{
             var message = '';
 
+            var element_title = $(element).attr('title');
             var element_name = $(element).attr('name');
 
-            if ( element_name && element_name.length )
+            if ( element_title && element_title.length )
+              message = '<b>'+element_title+'</b> must have '+option_array[1]+'+ characters.';
+            else if ( element_name && element_name.length )
               message = '<b>'+$.dg_ucwords(element_name)+'</b> must have '+option_array[1]+'+ characters.';
             else
               message = 'Input must have '+option_array[1]+'+ characters.';
