@@ -594,9 +594,14 @@ $.fn.dg_pop = function(options)
 {
   var event = [];
 	event.elements = this;
+  event.scrollAmount = 0;
+  event.scrollTop = 0;
+  event.oldScrollTop = 0;
   event.oninit_function = null;
   event.onenter_function = null;
   event.onleave_function = null;
+  event.onscroll_function = null;
+  event.onscrolledtop_function = null;
 
   if ( options )
 	$.each( options, function(index, value)
@@ -606,6 +611,7 @@ $.fn.dg_pop = function(options)
 			case 'oninit': event.oninit_function = value; break;
 			case 'onenter': event.onenter_function = value; break;
 			case 'onleave': event.onleave_function = value; break;
+			case 'onscroll': event.onscroll_function = value; break;
 			case 'onscrolledtop': event.onscrolledtop_function = value; break;
 		}
 	});
@@ -613,7 +619,10 @@ $.fn.dg_pop = function(options)
   if ( event.oninit_function )
   {
     var scroll_top = $(window).scrollTop();
+    event.oldScrollTop = event.scrollTop;
     event.scrollTop = scroll_top;
+    var window_height = $(window).height();
+    event.windowHeight = window_height;
 
     $.each(event.elements, function(index_element, element)
     {
@@ -625,16 +634,11 @@ $.fn.dg_pop = function(options)
   $(window).scroll(function()
   {
     var scroll_top = $(window).scrollTop();
+    event.oldScrollTop = event.scrollTop;
+    event.scrollTop = scroll_top;
     var window_height = $(window).height();
-
-    if ( scroll_top == 0 && event.onscrolledtop_function )
-    {
-      $.each(event.elements, function(index_element, element)
-      {
-        event.element = element;
-        event.onscrolledtop_function(event);
-      });
-    }
+    event.windowHeight = window_height;
+    event.scrollAmount = event.scrollTop - event.oldScrollTop;
 
     $.each(event.elements, function(index_element, element)
   	{
@@ -664,8 +668,79 @@ $.fn.dg_pop = function(options)
           event.onleave_function(event);
         }
       }
+
+      if ( event.onscroll_function )
+      {
+        event.element = element;
+        event.onscroll_function(event);
+      }
+
+      if ( scroll_top == 0 && event.onscrolledtop_function )
+      {
+        event.element = element;
+        event.onscrolledtop_function(event);
+      }
     });
   });
+}
+
+$.fn.dg_scrollBackground = function(options)
+{
+  var event = [];
+  event.elements = this;
+  event.speed = 100;
+  event.topoffset = 0.0;
+  event.repeat = false;
+  event.oninit_function = null;
+
+  if ( options )
+  $.each( options, function(index, value)
+  {
+  	switch ( index )
+  	{
+  		case 'speed': event.speed = value; break;
+  		case 'repeat': event.repeat = value; break;
+  		case 'oninit': event.oninit_function = value; break;
+  	}
+  });
+
+  var speed = 100 / event.speed;
+
+  $(event.elements).each( function()
+	{
+		var element = this;
+		event.element = element;
+
+		event.topoffset = parseFloat($(element).css('backgroundPositionY'));
+
+    console.log('event.topoffset '+event.topoffset);
+
+    $(element).dg_pop({
+        'onscroll': function(pop_event)
+        {
+          //console.log('pop_event.entered '+pop_event.element.entered);
+          if ( pop_event.element.entered )
+          {
+            event.topoffset += pop_event.scrollAmount / speed;
+
+            if ( !event.repeat )
+            {
+              if ( event.topoffset < 0 )
+                event.topoffset = 0;
+
+              if ( event.topoffset > 100 )
+                event.topoffset = 100;
+            }
+            
+            $(element).css('backgroundPositionY', event.topoffset+'%');
+          }
+        }
+    });
+
+		// Call Function after initialization
+    if ( event.oninit_function )
+      event.oninit_function(event);
+	});
 }
 
 $.fn.dg_overlapsLeft = function(target, width)
@@ -1041,7 +1116,7 @@ $.fn.dg_editer = function(options)
   event.arrow_tip_offset = 25;
 	event.update_target = true;
 	event.title_class = 'bg-secondary p-2';
-  	event.close_on_return = true;
+  event.close_on_return = true;
 	event.onreturn_function = null;
 	event.oninit_function = null;
 
