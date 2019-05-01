@@ -28,10 +28,13 @@ $.fn.dg_validate = function()
 	{
 		var options = $(element).attr('dg_validate').split(' ');
 
-    // Get the custom message for that input to display
-    var dg_validate_message = $(element).attr('dg_validate_message');
-
+    var has_errors  = false;
     var messages = '';
+
+    var div_error_messages = $(element).next('.error-messages:first');
+
+    if ( div_error_messages.length )
+      $(div_error_messages).find("[class*='error-']").addClass('d-none');
 
 		// For each options on this input element
 		$.each(options, function(index_option, option)
@@ -49,19 +52,37 @@ $.fn.dg_validate = function()
 
 					if ( element_value.length < min_chars )
 					{
+            has_errors  = true;
+
+            // Let's check if there was a custom message
+            if ( div_error_messages.length )
+            {
+              var div_error_class = '.error-'+option.replace(':', '-')+':first';
+              var div_error = $(div_error_messages).find(div_error_class);
+
+              if ( div_error.length )
+              {
+                $(div_error).removeClass('d-none');
+                break;
+              }
+            }
+
             var message = '';
 
             var element_title = $(element).attr('title');
             var element_name = $(element).attr('name');
+            var element_placeholder = $(element).attr('placeholder');
 
             if ( element_title && element_title.length )
-              message = '<b>'+element_title+'</b> must have '+option_array[1]+'+ characters.';
+            message = '<b>'+element_title+'</b> must have '+option_array[1]+'+ characters.';
             else if ( element_name && element_name.length )
-              message = '<b>'+$.dg_ucwords(element_name)+'</b> must have '+option_array[1]+'+ characters.';
+            message = '<b>'+$.dg_ucwords(element_name)+'</b> must have '+option_array[1]+'+ characters.';
+            else if ( element_placeholder && element_placeholder.length )
+            message = '<b>'+$.dg_ucwords(element_placeholder)+'</b> must have '+option_array[1]+'+ characters.';
             else
-              message = 'Input must have '+option_array[1]+'+ characters.';
+            message = 'Input must have '+option_array[1]+'+ characters.';
 
-						messages += '<p>'+message+'</p>';
+            messages += '<p>'+message+'</p>';
 					}
 
 					break;
@@ -69,12 +90,27 @@ $.fn.dg_validate = function()
 
         case 'email':
         {
-          if ( element_value.length > 4 )
+          if ( element_value.length )
           {
             var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,6})+$/;
 
             if ( !regex.test(element_value) )
   					{
+              has_errors  = true;
+
+              // Let's check if there was a custom message
+              if ( div_error_messages.length )
+              {
+                var div_error_class = '.error-'+option+':first';
+                var div_error = $(div_error_messages).find(div_error_class);
+
+                if ( div_error.length )
+                {
+                  $(div_error).removeClass('d-none');
+                  break;
+                }
+              }
+
               message = 'Invalid email syntax!';
 
               messages += '<p>'+message+'</p>';
@@ -86,25 +122,37 @@ $.fn.dg_validate = function()
 			}
 		});
 
-    // if ( !dg_validate_message || !dg_validate_message.length )
-
-    if ( messages && messages.length )
+    if ( has_errors )
     {
-      var plane = $(element).dg_plane({'content':'<span class="btn btn-outline-danger btn-bg p-0 px-1"><span aria-hidden="true">&times;</span></span> '+messages, 'position':'bottom', 'class':'bg-secondary px-2 rounded text-light curpointer', 'adaptive-width':false, 'style':'box-shadow: 5px 5px 10px #A8A8A8; border-top: 4px solid red;'});
+      $(element).addClass('border-danger');
 
-      $(plane).click( function()
+      if ( div_error_messages.length )
       {
-        $(plane).remove();
-      });
+        $(div_error_messages).removeClass('d-none');
+
+        if ( messages && messages.length )
+        {
+          var span_dynamic_message = $(div_error_messages).find('.error-dynamic:first');
+
+          if ( !span_dynamic_message.length )
+          {
+            $(div_error_messages).append('<span class="error-dynamic"></span>');
+            span_dynamic_message = $(div_error_messages).find('.error-dynamic:first');
+          }
+
+          $(span_dynamic_message).removeClass('d-none');
+          $(span_dynamic_message).html(messages);
+        }
+      }
 
       passed = false;
     }
     else
     {
-      var plane = $(element).dg_plane({'request-type':'plane'});
+      $(element).removeClass('border-danger');
 
-      if ( plane.length )
-        $(plane).remove();
+      if ( div_error_messages.length )
+        $(div_error_messages).addClass('d-none');
     }
 	});
 
@@ -731,7 +779,7 @@ $.fn.dg_scrollBackground = function(options)
               if ( event.topoffset > 100 )
                 event.topoffset = 100;
             }
-            
+
             $(element).css('backgroundPositionY', event.topoffset+'%');
           }
         }
@@ -949,6 +997,41 @@ $.fn.dg_drag = function(options)
       {
         event.element = element;
         event.ondrop_function(event);
+      }
+    });
+  });
+}
+
+$.fn.dg_clickedOutside = function(options)
+{
+  var event = [];
+  event.elements = this;
+  event.onclick_function = null;
+
+  if ( options )
+	$.each( options, function(index, value)
+	{
+		switch ( index )
+		{
+			case 'onclick': event.onclick_function = value; break;
+		}
+	});
+
+  $(document).click(function(e)
+  {
+    $(event.elements).each( function()
+  	{
+  		var element = this;
+      var clicked_element = e.target;
+
+      // If the target of the click isn't the container
+      if( !$(element).is(clicked_element) && $(element).has(clicked_element).length === 0 )
+      {
+        if ( event.onclick_function )
+        {
+          event.element = element;
+          event.onclick_function(event);
+        }
       }
     });
   });
