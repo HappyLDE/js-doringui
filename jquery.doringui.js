@@ -18,6 +18,54 @@ Date.prototype.standard = function()
   return yyyy+"/"+(mm[1]?mm:"0"+mm[0])+"/"+(dd[1]?dd:"0"+dd[0])+' '+(hour[1]?hour:'0'+hour[0])+':'+(min[1]?min:'0'+min[0])+':'+(sec[1]?sec:'0'+sec[0]); // padding
 };
 
+$.fn.dg_triggerError = function(options)
+{
+  var element = this;
+  var class_name = '';
+  var trigger_border = true;
+  var hide_error = false;
+
+  // Customizing options from the user
+	if ( options )
+	$.each( options, function(index, value)
+	{
+		switch ( index )
+		{
+			case 'class': class_name = value; break;
+			case 'trigger-border': trigger_border = value; break;
+			case 'hide': hide_error = value; break;
+		}
+	});
+
+  var div_error_messages = $(element).next('.error-messages:first');
+
+  if ( div_error_messages.length )
+  {
+    if ( hide_error )
+    {
+      $(div_error_messages).find("[class*='error-']").addClass('d-none');
+      $(div_error_messages).addClass('d-none');
+
+      if ( trigger_border )
+        $(element).removeClass('border-danger');
+    }
+    else
+    {
+      var div_error = $(div_error_messages).find('.'+class_name+':first');
+
+      if ( div_error.length )
+      {
+        $(div_error_messages).find("[class*='error-']").addClass('d-none');
+        $(div_error_messages).removeClass('d-none');
+        $(div_error).removeClass('d-none');
+
+        if ( trigger_border )
+          $(element).addClass('border-danger');
+      }
+    }
+  }
+}
+
 $.fn.dg_validate = function()
 {
 	var form_element = this;
