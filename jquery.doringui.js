@@ -37,7 +37,8 @@ $.fn.dg_triggerError = function(options)
 		}
 	});
 
-  var div_error_messages = $(element).next('.error-messages:first');
+  var div_error_messages = $('.error-messages'); // get all error messages
+  var div_error_messages = $(div_error_messages).eq($(div_error_messages).index(element) + 1); // find the next from the element (do it this way because sometimes next div error messages is nested somewhere else)
 
   if ( div_error_messages.length )
   {
@@ -79,7 +80,8 @@ $.fn.dg_validate = function()
     var has_errors  = false;
     var messages = '';
 
-    var div_error_messages = $(element).next('.error-messages:first');
+    var div_error_messages = $('.error-messages'); // get all error messages
+    var div_error_messages = $(div_error_messages).eq($(div_error_messages).index(element) + 1); // find the next from the element (do it this way because sometimes next div error messages is nested somewhere else)
 
     if ( div_error_messages.length )
       $(div_error_messages).find("[class*='error-']").addClass('d-none');
@@ -184,7 +186,7 @@ $.fn.dg_validate = function()
 
           if ( !span_dynamic_message.length )
           {
-            $(div_error_messages).append('<span class="error-dynamic"></span>');
+            $(div_error_messages).append('<div class="error-dynamic"></div>');
             span_dynamic_message = $(div_error_messages).find('.error-dynamic:first');
           }
 
