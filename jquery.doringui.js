@@ -20,7 +20,8 @@ Date.prototype.standard = function()
 
 $.fn.dg_triggerError = function(options)
 {
-  var element = this;
+  var form_element = this;
+  var element = null;
   var class_name = '';
   var trigger_border = true;
   var hide_error = false;
@@ -31,14 +32,20 @@ $.fn.dg_triggerError = function(options)
 	{
 		switch ( index )
 		{
-			case 'class': class_name = value; break;
+			case 'error-class': class_name = value; break;
+			case 'target': element = $(value); break;
 			case 'trigger-border': trigger_border = value; break;
 			case 'hide': hide_error = value; break;
 		}
 	});
 
-  var div_error_messages = $('.error-messages'); // get all error messages
-  var div_error_messages = $(div_error_messages).eq($(div_error_messages).index(element) + 1); // find the next from the element (do it this way because sometimes next div error messages is nested somewhere else)
+  var div_error_messages = $(element).next('.error-messages:first');
+
+  if ( !div_error_messages.length )
+  {
+    div_error_messages = $(form_element).find('.error-messages'); // get all error messages
+    div_error_messages = $(div_error_messages).eq($(div_error_messages).index(element) + 1); // find the next from the element (do it this way because sometimes next div error messages is nested somewhere else)
+  }
 
   if ( div_error_messages.length )
   {
@@ -80,8 +87,13 @@ $.fn.dg_validate = function()
     var has_errors  = false;
     var messages = '';
 
-    var div_error_messages = $('.error-messages'); // get all error messages
-    var div_error_messages = $(div_error_messages).eq($(div_error_messages).index(element) + 1); // find the next from the element (do it this way because sometimes next div error messages is nested somewhere else)
+    var div_error_messages = $(element).next('.error-messages:first');
+
+    if ( !div_error_messages.length )
+    {
+      div_error_messages = $(form_element).find('.error-messages'); // get all error messages
+      div_error_messages = $(div_error_messages).eq($(div_error_messages).index(element) + 1); // find the next from the element (do it this way because sometimes next div error messages is nested somewhere else)
+    }
 
     if ( div_error_messages.length )
       $(div_error_messages).find("[class*='error-']").addClass('d-none');
@@ -811,7 +823,7 @@ $.fn.dg_scrollBackground = function(options)
 
 		event.topoffset = parseFloat($(element).css('backgroundPositionY'));
 
-    console.log('event.topoffset '+event.topoffset);
+    // console.log('event.topoffset '+event.topoffset);
 
     $(element).dg_pop({
         'onscroll': function(pop_event)
@@ -1928,6 +1940,7 @@ $.dg_repairLink = function(options)
 	var value = '';
 	var tolower = 0;
   var replace_with = '-';
+  var remove_last_replace = false;
 
 	if ( options )
 	$.each( options, function(index, option_value)
@@ -1937,6 +1950,7 @@ $.dg_repairLink = function(options)
 			case "value": value = option_value; break;
 			case "to-lower": tolower = option_value; break;
 			case "replace-with": replace_with = option_value; break;
+			case "remove-last-replace": remove_last_replace = option_value; break;
 		}
 	});
 
@@ -1955,8 +1969,8 @@ $.dg_repairLink = function(options)
     if ( value.substr(0, 1) == replace_with )
       value = value.substr(1, value.length);
 
-    // if ( value.substr(value.length-1) == replace_with )
-    //   value = value.substr(0, value.length-1);
+    if ( remove_last_replace && value.substr(value.length-1) == replace_with )
+      value = value.substr(0, value.length-1);
 	}
 
 	return value;
